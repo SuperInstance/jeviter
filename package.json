@@ -6,7 +6,8 @@
   "main": "src/core.js",
   "exports": {
     ".": "./src/core.js",
-    "./profile": "./src/profile.js"
+    "./profile": "./src/profile.js",
+    "./ade": "./src/ade.js"
   },
   "bin": { "jeviter": "./src/cli.js" },
   "scripts": { "test": "node --test", "start": "node src/cli.js" },
