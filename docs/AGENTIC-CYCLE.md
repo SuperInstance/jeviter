@@ -105,7 +105,12 @@ the ratchet, provenance or it didn't happen — is written in tests.
    call receipted on the bridge ledger.
 7. **Sequential-merge governor** — the six patterns' last one, made
    homeostatic: merge PRs only when their shape stops surprising; the
-   merge queue rests between divergent changes.
+   merge queue rests between divergent changes. **Built**
+   (`src/governor.js` + `examples/governor.js`): shape = top-level areas +
+   magnitude class; a divergent merge admits AND rests the queue a fixed
+   number of held PRs (never wall-clock); THE RATCHET — one divergent
+   shape buys exactly one rest, so alternating fixed shapes cannot keep
+   the queue closed; every decision incl. holds booked on the chain.
 
 ## 5. What we build first
 
