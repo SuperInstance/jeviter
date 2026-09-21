@@ -85,6 +85,11 @@ if (cmd === 'scan') {                       // read-back: verify + name the patt
     process.exit(2);                        // an unreadable ledger is never a PASS
   }
   const r = scanLedger(entries);
+  if (rest.includes('--panel')) {           // instrument snapshot, read-only
+    const { renderScanSummary } = await import('./tui.js');
+    console.log(renderScanSummary(r));
+    process.exit(r.verified ? 0 : 1);       // paint never softens the verdict
+  }
   console.log(`scan(${target}): ${r.verified ? 'CHAIN VERIFIED' : 'CHAIN BROKEN'} — ${r.entries} receipt(s)`);
   for (const [kind, n] of Object.entries(r.kinds).sort()) console.log(`  ${kind}: ${n}`);
   console.log(`reading: ${r.reading}`);
