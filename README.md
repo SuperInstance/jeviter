@@ -1,5 +1,7 @@
 # jeviter
 
+![CI](https://github.com/SuperInstance/jeviter/actions/workflows/ci.yml/badge.svg)
+
 **Don't poll. Rest, and react.**
 
 Homeostatic iteration for any agentic system. Replace `for (const event of stream)`
