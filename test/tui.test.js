@@ -69,3 +69,52 @@ test('frame homes and clears; teardown restores cursor', () => {
   assert.match(f, /EXHAUSTED/);
   assert.ok(TEARDOWN.includes('\x1b[?25h'));
 });
+
+// ── TUI v0.5: the read-back panel ──────────────────────────────────────────
+import { renderScanSummary } from '../src/tui.js';
+import { scanLedger, Ledger } from '../src/core.js';
+
+test('scan panel: verified chain renders VERIFIED and the reading', () => {
+  const ledger = new Ledger('t');
+  ledger.book({ pulls: 1 }, { text: 'seed' }, 'seed', { gain: 0, th: 0 });
+  ledger.book({ pulls: 2 }, { text: 'shock' }, 'event', { gain: 0.9, th: 0.1 });
+  ledger.book({ pulls: 3 }, { text: 'hum' }, 'silence', { gain: 0.05, th: 0.2 });
+  const out = renderScanSummary(scanLedger(ledger.entries));
+  assert.match(out, /CHAIN VERIFIED — 3 receipt/);
+  assert.match(out, /reading: ALIVE — 1 event\(s\), 1 silence\(s\) booked/);
+});
+
+test('scan panel: kinds histogram is sorted and counted', () => {
+  const ledger = new Ledger('t');
+  for (let i = 0; i < 3; i++) ledger.book({ pulls: i + 1 }, { text: `e${i}` }, 'event', { gain: 1, th: 0 });
+  ledger.book({ pulls: 4 }, { text: 's' }, 'silence', { gain: 0, th: 1 });
+  const out = renderScanSummary(scanLedger(ledger.entries));
+  const ei = out.indexOf('event '), si = out.indexOf('silence ');
+  assert.ok(ei >= 0 && si >= 0 && ei < si, 'histogram sorted by count desc');
+  assert.match(out, /event\s+.*3/);
+  assert.match(out, /silence\s+.*1/);
+});
+
+test('scan panel: tamper renders BROKEN, names the row, never softens', () => {
+  const ledger = new Ledger('t');
+  ledger.book({ pulls: 1 }, { text: 'ok' }, 'event', { gain: 1, th: 0 });
+  const entries = ledger.entries.map((e) => ({ ...e }));
+  entries[0] = { body: JSON.stringify({ kind: 'event', text: 'FORGED', gain: 9, th: 0 }), hash: entries[0].hash };
+  const out = renderScanSummary(scanLedger(entries));
+  assert.match(out, /CHAIN BROKEN — tamper at row 0/);
+  assert.match(out, /reading: .*TAMPER/);
+  assert.ok(!/CHAIN VERIFIED/.test(out), 'a broken chain must never render VERIFIED');
+});
+
+test('scan panel: empty ledger renders honest quiet, not a failure costume', () => {
+  const out = renderScanSummary(scanLedger([]));
+  assert.match(out, /EMPTY — no receipts; nothing to audit yet/);
+  assert.ok(!/BROKEN/.test(out));
+});
+
+test('scan panel: pure — same scan, same string', () => {
+  const ledger = new Ledger('t');
+  ledger.book({ pulls: 1 }, { text: 'a' }, 'event', { gain: 1, th: 0 });
+  const scan = scanLedger(ledger.entries);
+  assert.equal(renderScanSummary(scan), renderScanSummary(structuredClone(scan)));
+});

@@ -77,3 +77,31 @@ export function frame(state) {
   return `${ESC}?25l${ESC}H${ESC}2J${renderTui(state)}`;
 }
 export const TEARDOWN = `${ESC}?25h${ESC}0m\n`;
+
+// ── TUI v0.5: the read-back panel ──────────────────────────────────────────
+// `jeviter scan <ledger> --panel`: the same read-back scanLedger already
+// computes, rendered as an instrument snapshot. Pure renderer, same doctrine:
+// the panel books nothing, invents nothing — every glyph is scanLedger's
+// output. A broken chain renders red and names its row; an empty ledger
+// renders honest quiet; nothing here can turn TAMPER into a softer word.
+
+export function renderScanSummary(scan) {
+  const L = [];
+  L.push(`${ESC}1;36mjeviter${ESC}0m — ledger read-back${ESC}0K`);
+  if (!scan.verified) {
+    L.push(`${ESC}31m  CHAIN BROKEN — tamper at row ${scan.brokenAt}${ESC}0m${ESC}0K`);
+  } else if (scan.entries === 0) {
+    L.push(`${ESC}2m  EMPTY — no receipts; nothing to audit yet${ESC}0m${ESC}0K`);
+  } else {
+    L.push(`  CHAIN VERIFIED — ${scan.entries} receipt(s)${ESC}0K`);
+  }
+  const kinds = Object.entries(scan.kinds).sort((a, b) => b[1] - a[1]);
+  const maxN = kinds.length ? kinds[0][1] : 0;
+  L.push(`${ESC}34m  — receipts by kind —${ESC}0m${ESC}0K`);
+  for (const [kind, n] of kinds) {
+    L.push(`  ${kind.padEnd(10)} ${bar(n / Math.max(maxN, 1), 20)} ${n}${ESC}0K`);
+  }
+  if (!kinds.length) L.push(`${ESC}2m  ·${ESC}0m${ESC}0K`);
+  L.push(`  reading: ${scan.verified ? '' : ESC + '31m'}${scan.reading}${ESC}0m${ESC}0K`);
+  return L.join('\n');
+}
