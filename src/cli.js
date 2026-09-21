@@ -69,6 +69,7 @@ const ledgerPath = (() => {
 if (!cmd || cmd === 'help' || !target) {
   console.log('jeviter — rest, and react.\n\n  tail <file> [--k 2] [--ledger out.jsonl]');
   console.log('  follow <url> [--k 2] [--ledger out.jsonl]');
+  console.log('  tui <file|url> [--k 2] [--ledger out.jsonl]');
   console.log('  scan <ledger.jsonl>\n');
   console.log('Prints only when the stream\'s shape changes. Every silence is booked.');
   process.exit(0);
@@ -106,6 +107,41 @@ const persist = ledgerPath
   : () => {};
 const origBook = ledger.book.bind(ledger);
 ledger.book = (...a) => { const h = origBook(...a); persist(h, ledger.entries.at(-1).body); return h; };
+
+if (cmd === 'tui') {                        // instrument panel over a tail
+  const { createTuiState, updateTuiState, frame, TEARDOWN } = await import('./tui.js');
+  if (!process.stdout.isTTY) {
+    console.error('tui: needs a TTY (the panel is an instrument, not a pager)');
+    process.exit(2);
+  }
+  let ui = createTuiState({ k: opt('k', 2) });
+  const paint = () => process.stdout.write(frame(ui));
+  process.stdin.setRawMode(true);
+  process.stdin.on('data', (d) => { if (d.toString().includes('q')) {
+    process.stdout.write(TEARDOWN); process.exit(0); } });
+  process.on('exit', () => process.stdout.write(TEARDOWN));
+  const src = target.startsWith('http') ? followUrl(target) : followFile(target);
+  const iter = new JevIterator(src, { k: ui.k, ledger });
+  // observe receipts AS booked: the panel shows silences too — a tail you
+  // can watch must not hide what it swallowed (doctrine 3).
+  const cliBook = ledger.book.bind(ledger);
+  ledger.book = (state, payload, kind, extra) => {
+    const h = cliBook(state, payload, kind, extra);
+    if (kind === 'seed') ui = updateTuiState(ui, { type: 'seed', text: payload.text, pulls: state.pulls });
+    else if (kind === 'silence') ui = updateTuiState(ui, { type: 'silence', text: payload.text,
+      gain: extra.gain, threshold: extra.th, pulls: state.pulls });
+    return h;
+  };
+  paint();                                   // blank panel IS a state: receipted quiet
+  for await (const ev of iter) {
+    ui = updateTuiState(ui, { type: 'event', text: ev.text, gain: ev.gain,
+      threshold: ev.threshold, pulls: ev.pulls });
+    paint();
+  }
+  ui = updateTuiState(ui, { type: 'exhausted', pulls: ui.pulls });
+  paint();
+  process.exit(0);
+}
 
 const stream = cmd === 'tail' ? followFile(target)
   : cmd === 'follow' ? followUrl(target) : null;
