@@ -34,6 +34,40 @@ export class Ledger {
   }
 }
 
+// Read a persisted ledger back (scan/doctor): verify the chain from genesis
+// and name what the silence pattern says — the honest-negative twin of the
+// iterator. A ledger that verifies with 0 events is a QUIET stream (receipted
+// quiet, not a hang); a broken chain names its own row.
+export function scanLedger(entries) {
+  const kinds = {};
+  let brokenAt = null;
+  let h = 0n;
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    h = fnv1a64(e.body);
+    const stored = typeof e.hash === 'bigint' ? e.hash : BigInt('0x' + String(e.hash));
+    if (h !== stored) { brokenAt = i; break; }
+    let kind = 'unknown';
+    try { kind = JSON.parse(e.body).kind || 'unknown'; } catch { brokenAt = i; break; }
+    kinds[kind] = (kinds[kind] || 0) + 1;
+  }
+  const verified = brokenAt === null;
+  const events = kinds.event || 0;
+  const silences = (kinds.silence || 0) + (kinds.shed || 0);
+  let reading;
+  if (!verified) {
+    reading = `TAMPER — chain breaks at row ${brokenAt} (its own row names it)`;
+  } else if (entries.length === 0) {
+    reading = 'EMPTY — no receipts; nothing to audit yet';
+  } else if (events === 0) {
+    reading = `QUIET — ${entries.length} receipts, 0 events: receipted quiet, not a hang`;
+  } else {
+    reading = `ALIVE — ${events} event(s), ${silences} silence(s) booked, `
+      + `admission ${(100 * events / (events + silences)).toFixed(1)}%`;
+  }
+  return { verified, brokenAt, entries: entries.length, kinds, events, silences, reading };
+}
+
 export class JevIterator {
   constructor(stream, { k = 2.0, ledger = new Ledger(), profileFn = profile } = {}) {
     this.stream = stream[Symbol.iterator] ? stream[Symbol.iterator]() : stream;

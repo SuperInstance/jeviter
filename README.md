@@ -42,6 +42,7 @@ BigInt rationals; KL is computed over rationals, never a float identity.
 npm test                       # node --test
 node src/cli.js tail app.log --ledger app.ledger.jsonl
 node src/cli.js follow https://example.com/stream --k 1.5
+node src/cli.js scan app.ledger.jsonl   # verify chain + name the silence pattern
 node src/mcp.js                # MCP stdio server (Claude Desktop, fleet agents)
 ```
 
@@ -60,7 +61,8 @@ MCP tools: `jeviter_tail`, `jeviter_next`, `jeviter_throttle`, `jeviter_ledger_v
 | Surface | Status |
 |---|---|
 | Core ESM (browser/Node/Deno) | ✅ zero-dep |
-| CLI (`tail`, `follow`) | ✅ |
+| CLI (`tail`, `follow`, `scan`, stdin `digest`) | ✅ |
+| Org firehose watch (in service) | ✅ `examples/org-watch.js` |
 | MCP stdio server | ✅ |
 | TUI (valve dashboard) | designed — threshold, gain histogram, silence counter |
 | Python port | exists as `jev_quilt/jeviter.py` (same doctrine) |
