@@ -43,6 +43,7 @@ npm test                       # node --test
 node src/cli.js tail app.log --ledger app.ledger.jsonl
 node src/cli.js follow https://example.com/stream --k 1.5
 node src/cli.js scan app.ledger.jsonl   # verify chain + name the silence pattern
+node src/cli.js tui app.log --ledger app.ledger.jsonl  # live instrument panel (TTY)
 node src/mcp.js                # MCP stdio server (Claude Desktop, fleet agents)
 ```
 
@@ -62,6 +63,7 @@ MCP tools: `jeviter_tail`, `jeviter_next`, `jeviter_throttle`, `jeviter_ledger_v
 |---|---|
 | Core ESM (browser/Node/Deno) | ✅ zero-dep |
 | CLI (`tail`, `follow`, `scan`, stdin `digest`) | ✅ |
+| TUI (`tui` — instrument panel, silences rendered as data) | ✅ zero-dep ANSI |
 | Org firehose watch (in service) | ✅ `examples/org-watch.js` |
 | MCP stdio server | ✅ |
 | TUI (valve dashboard) | designed — threshold, gain histogram, silence counter |

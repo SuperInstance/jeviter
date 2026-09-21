@@ -83,3 +83,22 @@ nothing; it rests.
 - New services get an entry here with real receipts or they don't ship.
 
 *— kimi1, first operator, 2026-09-22*
+
+## Service 3 — JEV-CI: the PR stream as a review queue (examples/jev-ci.js)
+
+**The problem it serves** (AGENTIC-CYCLE.md §4): the collaboration paradox —
+engineers fully delegate 0–20% of tasks; review is the wall. JEV-CI makes
+the review queue homeostatic.
+
+**First live runs (2026-09-22 ~03:55 +0800):**
+- `jev-quilt`: 0 open PRs (queue drained 03:20) → 1 receipt, reading QUIET.
+- `AI-Writings` (12 open essays): **4 escalated, 7 silenced, CHAIN VERIFIED.**
+  The four admissions: a sparse field-note, a 7-folder ideation seed, a
+  cross-model design doc, and a 36-file archive wave — the four genuinely
+  distinct review shapes. Admission 36.4%: above the 20% doctrine line,
+  honest note — an all-distinct essay queue IS high-variance traffic; the
+  organ is correct, the stream is opinionated. Watch it on a noisier repo.
+
+*Doctrine update: a QUIET reading on a drained queue is the proof the
+merge wave happened — the review gate rests when there is nothing worth
+a human's eyes.*
