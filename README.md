@@ -66,6 +66,7 @@ MCP tools: `jeviter_tail`, `jeviter_next`, `jeviter_throttle`, `jeviter_ledger_v
 | TUI (`tui` — instrument panel, silences rendered as data) | ✅ zero-dep ANSI |
 | Org firehose watch (in service) | ✅ `examples/org-watch.js` |
 | MCP stdio server | ✅ |
+| Dreaming consolidation cell (receipted sleep) | ✅ `src/dream.js` |
 | TUI (valve dashboard) | designed — threshold, gain histogram, silence counter |
 | Python port | exists as `jev_quilt/jeviter.py` (same doctrine) |
 
