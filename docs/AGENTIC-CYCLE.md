@@ -100,7 +100,9 @@ the ratchet, provenance or it didn't happen — is written in tests.
    The throttle's ledger is the raw data.
 6. **ADE bridge** — jeviter/quilt primitives exposed via MCP into the
    Gen-4 environments (Warp/Intent-class), so fleet doctrine rides
-   whichever surface wins.
+   whichever surface wins. **Built** (`src/ade.js` + `fleet_*` MCP tools):
+   doctrine manifest, spec-fidelity gate, collaboration reading — each
+   call receipted on the bridge ledger.
 7. **Sequential-merge governor** — the six patterns' last one, made
    homeostatic: merge PRs only when their shape stops surprising; the
    merge queue rests between divergent changes.

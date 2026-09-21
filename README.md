@@ -57,7 +57,7 @@ for await (const ev of wrapAsync(it)) {
 }
 ```
 
-MCP tools: `jeviter_tail`, `jeviter_next`, `jeviter_throttle`, `jeviter_ledger_verify`.
+MCP tools: `jeviter_tail`, `jeviter_next`, `jeviter_throttle`, `jeviter_ledger_verify`; ADE bridge tools: `fleet_doctrine`, `fleet_spec_fidelity`, `fleet_collab_read`.
 
 ## Surfaces
 

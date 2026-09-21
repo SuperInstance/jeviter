@@ -3,6 +3,7 @@
 // throttle_call, ledger_verify. Streams are handles; next() pulls until
 // the world moves, so an MCP client's poll becomes a rest.
 import { JevIterator, Ledger, Throttle } from './core.js';
+import { artifactReader, runAdeTool } from './ade.js';
 
 const handles = new Map();
 let seq = 0;
@@ -20,6 +21,21 @@ const TOOLS = [
       required: ['endpoint', 'text'] } },
   { name: 'jeviter_ledger_verify', description: 'Replay a ledger JSONL from genesis; tamper breaks at its own row.',
     inputSchema: { type: 'object', properties: { ledger_path: { type: 'string' } }, required: ['ledger_path'] } },
+  { name: 'fleet_doctrine', description: 'Receipted fleet-doctrine manifest for ADE surfaces.',
+    inputSchema: { type: 'object', properties: {} } },
+  { name: 'fleet_spec_fidelity', description: 'Implementation-side spec fidelity from CANON claims and artifact contents.',
+    inputSchema: { type: 'object', properties: {
+      vessel: { type: 'string' },
+      claims: { type: 'array', items: { type: 'object', properties: {
+        path: { type: 'string' }, sha256: { type: 'string' } }, required: ['path', 'sha256'] } },
+      artifacts: { type: 'object' } }, required: ['claims', 'artifacts'] } },
+  { name: 'fleet_collab_read', description: 'Collaboration-paradox reading: resolution paths and named review walls.',
+    inputSchema: { type: 'object', properties: {
+      source: { type: 'string' },
+      items: { type: 'array', items: { type: 'object', properties: {
+        id: { type: 'string' }, path: { type: 'string', enum: ['delegated', 'reviewed', 'direct'] },
+        reviewPasses: { type: 'number' }, resolved: { type: 'boolean' } },
+        required: ['id', 'path', 'resolved'] } } }, required: ['items'] } },
 ];
 
 const send = (msg) => process.stdout.write(JSON.stringify(msg) + '\n');
@@ -65,6 +81,11 @@ async function callTool(name, args) {
     const r = t.call(args.text);
     return { content: [{ type: 'text', text: JSON.stringify(
       r === undefined ? { shed: true, shed_count: t.shed } : { escalated: true, count: t.escalated }) }] };
+  }
+  if (name.startsWith('fleet_')) {
+    const read = name === 'fleet_spec_fidelity' ? artifactReader(args.artifacts) : undefined;
+    const result = runAdeTool(name, { ...args, read });
+    return { content: [{ type: 'text', text: JSON.stringify(result) }] };
   }
   if (name === 'jeviter_ledger_verify') {
     const { readFileSync } = await import('node:fs');
