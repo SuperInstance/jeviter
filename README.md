@@ -69,8 +69,25 @@ MCP tools: `jeviter_tail`, `jeviter_next`, `jeviter_throttle`, `jeviter_ledger_v
 | Org firehose watch (in service) | ✅ `examples/org-watch.js` |
 | MCP stdio server | ✅ |
 | Dreaming consolidation cell (receipted sleep) | ✅ `src/dream.js` |
+| Vibe→Spec distiller (`distill` — persona playtest → checked CANON stub) | ✅ seed 3 |
 | TUI (valve dashboard) | designed — threshold, gain histogram, silence counter |
 | Python port | exists as `jev_quilt/jeviter.py` (same doctrine) |
+
+## Vibe→Spec distiller (SDAD seed 3)
+
+`src/distill.js`: a persona playtest transcript goes in; a machine-checked
+CANON.md stub comes out. Every lesson must cite transcript lines that resolve
+(CITATION); repeats of already-pinned lessons book silence, never re-pin (DUP);
+new lessons pass through the Throttle — the surprising escalate as receipts, the
+familiar are receipted silence (JEV GATE); and the rendered stub is re-parsed
+and verified, hashes recomputed against the transcript (WELL-FORMEDNESS).
+REFUSED lessons are named, never silently dropped; malformed input yields a
+refused receipt and an honest empty stub, never a throw. `docs/VIBE-DISTILL.md`
+states the doctrine; the stub is the spec surface `src/fidelity.js` meters.
+
+```
+node examples/vibe-distill.js --check
+```
 
 ## Doctrine provenance
 

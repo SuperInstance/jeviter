@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/core.js",
     "./profile": "./src/profile.js",
-    "./ade": "./src/ade.js"
+    "./ade": "./src/ade.js",
+    "./distill": "./src/distill.js"
   },
   "bin": { "jeviter": "./src/cli.js" },
   "scripts": { "test": "node --test", "start": "node src/cli.js" },
