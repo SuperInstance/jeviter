@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { JevIterator, Ledger, Throttle, scanLedger } from '../src/core.js';
 
 function* periodic(lines) { yield* lines; }
+async function collect(it) { const a = []; for await (const x of it) a.push(x); return a; }
 
 test('scan: fresh ledger verifies and reads EMPTY', () => {
   const r = scanLedger([]);
@@ -13,10 +14,10 @@ test('scan: fresh ledger verifies and reads EMPTY', () => {
   assert.equal(r.reading.startsWith('EMPTY'), true);
 });
 
-test('scan: all-silence ledger verifies and reads QUIET (not a hang)', () => {
+test('scan: all-silence ledger verifies and reads QUIET (not a hang)', async () => {
   const ledger = new Ledger('t');
   const it = new JevIterator(periodic(Array(30).fill('same same same')), { ledger });
-  for (const _ of it) assert.fail('periodic constant stream must emit nothing');
+  for await (const _ of it) assert.fail('periodic constant stream must emit nothing');
   const r = scanLedger(ledger.entries);
   assert.equal(r.verified, true);
   assert.equal(r.events, 0);
@@ -25,14 +26,14 @@ test('scan: all-silence ledger verifies and reads QUIET (not a hang)', () => {
   assert.equal(r.reading.startsWith('QUIET'), true);
 });
 
-test('scan: mixed stream reads ALIVE with admission rate', () => {
+test('scan: mixed stream reads ALIVE with admission rate', async () => {
   const ledger = new Ledger('t');
   // letter-class organ: shape must differ in CLASS counts, not letters
   // ('aa bb cc' vs 'zz qq vv' are the SAME profile — pinned behavior);
   // and KL over disjoint support is 0, so the shift must keep overlap.
   const lines = ['aa bb cc', 'aa bb ccc', 'aa bb ccc', 'aeiou x', 'aeiou x'];
   const it = new JevIterator(periodic(lines), { ledger });
-  const ticks = [...it].map((e) => e.value?.tick ?? e.tick);
+  const ticks = (await collect(it)).map((e) => e.value?.tick ?? e.tick);
   assert.deepEqual(ticks, [1, 2]);
   const r = scanLedger(ledger.entries);
   assert.equal(r.verified, true);
@@ -42,10 +43,10 @@ test('scan: mixed stream reads ALIVE with admission rate', () => {
   assert.match(r.reading, /admission 50\.0%/);
 });
 
-test('scan: tamper breaks at its own row', () => {
+test('scan: tamper breaks at its own row', async () => {
   const ledger = new Ledger('t');
   const it = new JevIterator(periodic(['aa bb cc', 'aeiou x', '123 456']), { ledger });
-  [...it];
+  await collect(it);
   const entries = ledger.entries.map((e) => ({ ...e }));
   entries[1] = { body: entries[1].body.replace('event', 'ev ants'), hash: entries[1].hash };
   const r = scanLedger(entries);
@@ -54,10 +55,10 @@ test('scan: tamper breaks at its own row', () => {
   assert.match(r.reading, /TAMPER — chain breaks at row 1/);
 });
 
-test('scan: accepts persisted-hex hashes (jsonl round-trip form)', () => {
+test('scan: accepts persisted-hex hashes (jsonl round-trip form)', async () => {
   const ledger = new Ledger('t');
   const it = new JevIterator(periodic(['aa bb cc', 'aeiou x']), { ledger });
-  [...it];
+  await collect(it);
   const persisted = ledger.entries.map((e) => ({
     body: e.body, hash: e.hash.toString(16).padStart(16, '0'),
   }));

@@ -70,14 +70,16 @@ export function scanLedger(entries) {
 
 export class JevIterator {
   constructor(stream, { k = 2.0, ledger = new Ledger(), profileFn = profile } = {}) {
-    this.stream = stream[Symbol.iterator] ? stream[Symbol.iterator]() : stream;
+    this.stream = stream[Symbol.asyncIterator]
+      ? stream[Symbol.asyncIterator]()
+      : (stream[Symbol.iterator] ? stream[Symbol.iterator]() : stream);
     this.k = k; this.ledger = ledger; this.profileFn = profileFn;
     this.last = null; this.pulls = 0; this.emitted = 0; this.accepted = [];
   }
   threshold() { return dynamicThreshold(this.accepted, this.k); }
-  next() {
+  async next() {
     for (;;) {
-      const step = this.stream.next();
+      const step = await this.stream.next();
       if (step.done) {
         this.ledger.book({ pulls: this.pulls }, {}, 'exhausted', { emitted: this.emitted });
         return { done: true, value: undefined };
@@ -108,7 +110,7 @@ export class JevIterator {
         pulls: this.pulls, tick: this.emitted } };
     }
   }
-  [Symbol.iterator]() { return this; }
+  [Symbol.asyncIterator]() { return this; }
 }
 
 // Homeostatic throttle: wrap fn; familiar calls are shed (receipted),

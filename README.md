@@ -52,7 +52,7 @@ node src/mcp.js                # MCP stdio server (Claude Desktop, fleet agents)
 ```js
 import { JevIterator, Ledger } from 'jeviter';
 const it = new JevIterator(streamOfLines, { k: 2, ledger: new Ledger('my-cell') });
-for await (const ev of wrapAsync(it)) {
+for await (const ev of it) {
   // ev: { text, gain, threshold, pulls, tick } — the world moved
 }
 ```

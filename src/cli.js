@@ -51,7 +51,7 @@ if (cmd === 'digest' || cmd === '-' || target === '-') {
   const kIdx = rest.indexOf('--k');
   const it = new JevIterator(readFileSync(0, 'utf8').split('\n').filter((l) => l.trim()),
     { k: kIdx >= 0 ? Number(rest[kIdx + 1]) : 2, ledger });
-  for (const ev of it) {
+  for await (const ev of it) {
     console.log(`[event #${ev.tick} gain=${ev.gain.toFixed(3)} th=${ev.threshold.toFixed(3)}] ${ev.text}`);
   }
   console.error(`digest: ${ledger.entries.length} pulls booked, ${ledger.entries.filter((e) => JSON.parse(e.body).kind === 'silence').length} silences — the rest told us something`);
