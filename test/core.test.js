@@ -56,6 +56,24 @@ test('ledger tamper breaks at its own row', async () => {
   assert.equal(l.verify(), false);
 });
 
+test('forged body + recomputed self-hash still breaks on prev-link (Round-16 scout hole)', async () => {
+  const l = new Ledger();
+  await collect(new JevIterator([CALM, HOT, CALM], { ledger: l }));
+  const e = l.entries[1];
+  const body = JSON.parse(e.body);
+  body.kind = 'forged';
+  e.body = JSON.stringify(body);   // real content change, same key order
+  e.hash = fnv1a64(e.body);        // honest self-hash for the FORGED body
+  assert.equal(l.verify(), false); // old verify() passed this; prev-link names it
+});
+
+test('deleting a middle row breaks the chain (prev-link)', async () => {
+  const l = new Ledger();
+  await collect(new JevIterator([CALM, HOT, CALM], { ledger: l }));
+  l.entries.splice(1, 1);
+  assert.equal(l.verify(), false);
+});
+
 test('Q16 exactness: reciprocal multiplication, no float identity', () => {
   const q = new Q16(1, 3).mul(new Q16(3, 1));
   assert.equal(q.n, 3n); assert.equal(q.d, 3n);

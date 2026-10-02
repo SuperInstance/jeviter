@@ -25,10 +25,15 @@ export class Ledger {
     return this.tail;
   }
   verify() {  // replay from genesis; tamper breaks at its own row
-    let h = 0n;
+    let prevExpected = 0n; // genesis: book() seeds prev = this.tail = 0n
     for (const e of this.entries) {
-      h = fnv1a64(e.body);
-      if (h !== e.hash) return false;
+      let bodyPrev;
+      try { bodyPrev = BigInt('0x' + JSON.parse(e.body).prev); }
+      catch { return false; } // unparseable body or missing prev field
+      if (bodyPrev !== prevExpected) return false; // prev-link: forged body with a recomputed self-hash dies HERE
+      const h = fnv1a64(e.body);
+      if (h !== e.hash) return false; // self-hash: any byte of the body was touched without recomputing
+      prevExpected = e.hash;
     }
     return true;
   }
@@ -41,12 +46,20 @@ export class Ledger {
 export function scanLedger(entries) {
   const kinds = {};
   let brokenAt = null;
+  let brokenWhy = '';
   let h = 0n;
+  let prevExpected = 0n; // genesis
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
+    let bodyPrev = null;
+    try {
+      bodyPrev = BigInt('0x' + JSON.parse(e.body).prev);
+    } catch { brokenAt = i; brokenWhy = 'unparseable body or missing prev'; break; }
+    if (bodyPrev !== prevExpected) { brokenAt = i; brokenWhy = 'prev-link mismatch (rewritten row with recomputed hash)'; break; }
     h = fnv1a64(e.body);
     const stored = typeof e.hash === 'bigint' ? e.hash : BigInt('0x' + String(e.hash));
-    if (h !== stored) { brokenAt = i; break; }
+    if (h !== stored) { brokenAt = i; brokenWhy = 'self-hash mismatch (body touched without recompute)'; break; }
+    prevExpected = stored;
     let kind = 'unknown';
     try { kind = JSON.parse(e.body).kind || 'unknown'; } catch { brokenAt = i; break; }
     kinds[kind] = (kinds[kind] || 0) + 1;
@@ -56,7 +69,7 @@ export function scanLedger(entries) {
   const silences = (kinds.silence || 0) + (kinds.shed || 0);
   let reading;
   if (!verified) {
-    reading = `TAMPER — chain breaks at row ${brokenAt} (its own row names it)`;
+    reading = `TAMPER — chain breaks at row ${brokenAt} (${brokenWhy || 'its own row names it'})`;
   } else if (entries.length === 0) {
     reading = 'EMPTY — no receipts; nothing to audit yet';
   } else if (events === 0) {
