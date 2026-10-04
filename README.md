@@ -94,3 +94,16 @@ node examples/vibe-distill.js --check
 Born in jev-quilt's classifier lab (E5–E7): cascade non-monotonicity, the
 amplitude-invariance sweep, and the throttle sense-organ lesson (letter-class
 profiles beat chaotic per-char hashes — KL must always have mass to compare).
+
+---
+
+## Documentation
+
+Wave-69 documentation package (task 69-doc-b). Start here by audience:
+
+- **Agent onboarding (zero-shot entry)**: [docs/ONBOARDING.md](./docs/ONBOARDING.md) — identity, verify-commands, reading order, gotchas, frontier.
+- **End users**: [docs/USER-GUIDE.md](./docs/USER-GUIDE.md) — install, first success (real captured output), everyday tasks, troubleshooting, FAQ.
+- **Developers**: [docs/DEVELOPER-GUIDE.md](./docs/DEVELOPER-GUIDE.md) — code layout, core concepts, how to add cells/verbs, testing, conventions.
+- **Engineers / operators**: [docs/ENGINEERING-NOTES.md](./docs/ENGINEERING-NOTES.md) — architecture, invariants, failure modes, cost envelope, design decisions.
+- **Executives**: [docs/CTO-BRIEF.md](./docs/CTO-BRIEF.md) — value, maturity, risks, strategic options.
+- **Index of all deeper knowledge**: [docs/KNOWLEDGE-MAP.md](./docs/KNOWLEDGE-MAP.md) — ledgers, docs, cells, and journal Task IDs, one line each.
