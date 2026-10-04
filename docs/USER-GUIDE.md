@@ -89,7 +89,7 @@ arrival, decides admission.
 
 ```bash
 cat incident-report.md | node src/cli.js -
-node src/cli.js digest report.md
+cat report.md | node src/cli.js digest    # digest reads STDIN; it ignores a filename argument
 ```
 
 Prints each admitted line and a stderr summary (`N pulls booked, M silences`).
@@ -151,7 +151,9 @@ about its transcript lines and watch it refuse.
 | `scan` says `TAMPER — chain breaks at row N` | The row at N was edited (or written by a different hash function) without re-chaining | Restore from the honest source; the row names its own failure; never "repair" in place |
 | `scan` exits 2 | Ledger file unreadable/unparseable | Check the path; an unreadable ledger is never a PASS |
 | `tui: needs a TTY` | No terminal on stdout | Run in a real TTY; pipe `scan --panel` for non-interactive reads |
-| `gh` errors in examples/org-watch.js or jev-ci.js | GitHub CLI not installed/authenticated | `gh auth login`; these examples are in-service tools, not tests |
+| `follow <url>` exits 0 with no output and no ledger rows | `follow` never checks the HTTP status — a 404 stream is a silent success | Verify the URL manually (curl it) before trusting a quiet `follow` (wave-69 drill finding) |
+| `digest report.md` books nothing / waits on stdin | `digest` ignores its file argument and always reads STDIN | Pipe into it: `cat report.md | node src/cli.js digest` (wave-69 drill finding) |
+| `TypeError: it is not iterable` in examples/org-watch.js or jev-ci.js | the `gh` CLI is not installed (or not authenticated); without `gh` the examples crash with a TypeError, not a friendly error | Install the gh CLI AND `gh auth login`; these examples are in-service tools, not tests (wave-69 drill finding) |
 | Ledger row looks like a JSON string inside JSON | `{"body":"{\"cell\":...}","hash":"..."}` | Parse `body` as a second JSON step; that is the format |
 | My payload text is cut off in receipts | Payloads truncate at 200 chars by design | Keep the ledger as an audit trail; store full text elsewhere |
 | `node --test` fails with an odd discovery error | Invoked outside the package root with explicit dirs | Use `npm test` from the repo root |

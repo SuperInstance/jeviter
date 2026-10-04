@@ -50,8 +50,8 @@ printf 'a\na\na\nsuddenly something new\n' | node src/cli.js -
 node src/cli.js tail app.log --ledger app.ledger.jsonl
 node src/cli.js follow https://example.com/stream --k 1.5
 
-# 4. The gh-backed examples need the GitHub CLI authenticated (gh) — they
-#    are in-service tools, not tests:
+# 4. The gh-backed examples need the GitHub CLI installed AND authenticated
+#    (gh) — they are in-service tools, not tests:
 node examples/org-watch.js --once              # org firehose, one poll
 node examples/jev-ci.js SuperInstance/jev-quilt --once   # PR-stream watch
 
@@ -60,8 +60,9 @@ node src/mcp.js
 ```
 
 Nothing in the core requires credentials or network. The two in-service
-examples shell out to `gh`; if `gh` is not authenticated they fail with the
-underlying `gh` error — that is expected, not a bug.
+examples require the `gh` CLI installed AND authenticated; without `gh` the
+examples crash with a `TypeError` (not a friendly error) — wave-69 drill
+finding.
 
 ## Reading order (paths, not vibes)
 
@@ -101,6 +102,18 @@ underlying `gh` error — that is expected, not a bug.
 - **`scan` exit codes are law**: unreadable ledger → exit 2 (an unreadable
   ledger is never a PASS), broken chain → exit 1, verified → 0. Scripts that
   ignore exit codes will silently accept tampered ledgers.
+- **`follow` never checks the HTTP status**: a 404 URL streams nothing and
+  exits 0 — zero output, zero ledger rows, a silent success. Verify the URL
+  manually before trusting a quiet `follow` (wave-69 drill finding).
+- **`digest` reads STDIN, not its file argument**: `digest <file>` ignores the
+  filename — pipe into it (`cat report.md | node src/cli.js digest`), do not
+  pass a filename (wave-69 drill finding).
+- **`src/profile.js` holds more than the core primitives**: `klGainStrict`,
+  `profileValue`, and `dynamicThresholdEWMA` live beside `fnv1a64`, `Q16`,
+  `profile`, `klGain`, `dynamicThreshold`. The EWMA comment
+  (`src/profile.js:108-114`) records real history: org-watch was once found
+  DEAD (frozen threshold, 81 zero-admission rows) — read it before touching
+  the threshold code.
 - **The TUI needs a TTY** (`tui` exits 2 without one — "the panel is an
   instrument, not a pager").
 - **The ratchet cuts both ways**: a fixed-amplitude signal is silenced after

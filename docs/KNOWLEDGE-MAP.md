@@ -62,7 +62,9 @@
 - `docs/FLEET-DOGFOOD.md` — kimi1's honest usage notes (what was routed,
   admitted, refused; the 3-pinned/3-silenced gate decision).
 - `docs/IN-SERVICE.md` — the operator's log (Service 1: self-digestion of a
-  session report; further services appended over time).
+  session report; further services appended over time). Seam: IN-SERVICE.md
+  froze at 101 receipts; the shipped ledger (`org-watch.ledger.jsonl`) has
+  grown since — ledgers are truth.
 - `docs/SUBSTRATE-SPRINGS.md` — which substrate-* repos can replace which
   seams (rng/embedding/vectors) with the honest gaps of each.
 - `docs/JEV-USAGE-NOTES-kimi1-2026-09-24.md` — arena-grounded notes on where
@@ -130,6 +132,6 @@ cat docs/IN-SERVICE.md docs/FLEET-DOGFOOD.md
 # Journal mentions:
 grep -n "jeviter" /home/z/my-project/worklog.md
 # Cross-repo canary pins:
-grep -rn "0x24a555471370b18d" src/ README.md
-grep -rn "0x024a555471370b18d" ../jev-quilt/tests/test_bookkeeper.py   # same value, leading-zero notation
+grep -rn "24a555471370b18d" test/ README.md   # café canary: test/core.test.js:11 (string form), test/distill.test.js:57 (0x024a… BigInt), README.md
+grep -rn "0x024a555471370b18d" ../jev-quilt/tests/test_bookkeeper.py   # same value, leading-zero notation (fleet-internal sibling; clone https://github.com/SuperInstance/jev-quilt to resolve)
 ```
